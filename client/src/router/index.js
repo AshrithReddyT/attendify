@@ -2,7 +2,8 @@ import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router
 import HomeView from '../views/HomeView.vue'
 
 function isLoggedIn(to, from, next) {
-  if (localStorage.access_token) {
+  console.log('HEREE')
+  if (localStorage.userProfile) {
     next()
   } else {
     next('/')
@@ -19,7 +20,29 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: HomeView,
+      beforeEnter: (to, from, next) => {
+        const tokenString = localStorage.getItem('tokens')
+        if (!tokenString) {
+          next()
+          return
+        }
+
+        let token
+        try {
+          token = JSON.parse(tokenString)
+        } catch (error) {
+          console.error('Invalid token:', error)
+          next()
+          return
+        }
+
+        if (token.expiry_date > Date.now()) {
+          next('/dashboard')
+        } else {
+          next()
+        }
+      }
     },
     {
       path: '/about',
@@ -32,8 +55,8 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: () => import('../views/DashboardView.vue'),
-      beforeEnter: isLoggedIn
+      component: () => import('../views/DashboardView.vue')
+      // beforeEnter: isLoggedIn
     },
     {
       path: '/event',
@@ -47,7 +70,7 @@ const router = createRouter({
       component: () => import('../views/AttendView.vue')
     },
     {
-      path: '/qr/:meetingId',
+      path: '/qr/:meetingId?',
       name: 'qr',
       component: () => import('../views/QrView.vue')
     },

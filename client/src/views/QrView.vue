@@ -1,5 +1,8 @@
 <template>
-  <div class="qr-container">
+  <div v-if="invalidMeetingMessage" class="qr-container">
+    <h2>{{ invalidMeetingMessage }}</h2>
+  </div>
+  <div v-else class="qr-container">
     <h1 v-if="timeLeft > 0">Your code will expire in {{ timeLeft }} seconds.</h1>
     <h1 v-else>QR code expired. Please refresh the code.</h1>
     <div v-if="qrCodeData" class="code-cont">
@@ -23,6 +26,7 @@ export default {
     const qrCodeData = ref(null);
     const size = 300;
     const timeLeft = ref(30);
+    const invalidMeetingMessage = ref("");
     const route = useRoute();
 
     const generateQRAndStartTimer = async () => {
@@ -41,7 +45,9 @@ export default {
           { meetingId: route.params.meetingId, userId: userObj.email },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.access_token}`,
+              Authorization: `Bearer ${
+                JSON.parse(localStorage.getItem("tokens")).access_token
+              }`,
             },
           }
         );
@@ -49,6 +55,7 @@ export default {
         qrCodeData.value = response.data;
         timeLeft.value = 30;
       } catch (error) {
+        invalidMeetingMessage.value = "Not a valid meeting or user";
         console.error(error);
       }
     };
@@ -73,6 +80,7 @@ export default {
       size,
       generateQRAndStartTimer,
       timeLeft,
+      invalidMeetingMessage,
     };
   },
 };
@@ -80,6 +88,11 @@ export default {
 
 <style scoped>
 h1 {
+  color: rgb(58, 58, 58);
+  font-size: 1.6rem;
+}
+
+h2 {
   color: rgb(58, 58, 58);
   font-size: 1.6rem;
 }

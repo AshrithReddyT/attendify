@@ -37,9 +37,9 @@ const insertEvent = async (jwtToken, { meetingDetails, guestList }) => {
       resource: event,
       sendNotifications: true,
     });
-
+    console.log("meetingData", data);
     console.log(`Event created: ${data.htmlLink}`);
-    return data.htmlLink;
+    return data;
     // return "event-sim";
     // console.log("event");
   } catch (error) {

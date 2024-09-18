@@ -2,11 +2,25 @@
 import { getUserName } from "../utils/userDetail";
 import { clearToken } from "../utils/userDetail";
 import { useRouter } from "vue-router";
+import { login } from "../utils/login";
+import { ref } from "vue";
+import { inject } from "vue";
+const isAuthenticated = inject("isAuthenticated");
 
 const router = useRouter();
+
+const loginRedirect = async () => {
+  await login();
+  // Redirect to dashboard
+  console.log("HAHAHA");
+  console.log(router);
+  router.push("/dashboard");
+  isAuthenticated.value = true;
+};
 const logout = () => {
   clearToken();
   router.push("/");
+  isAuthenticated.value = false;
 };
 </script>
 
@@ -238,32 +252,10 @@ footer {
     </div>
     <div class="flexItem">
       <ul class="header-nav2">
-        <!-- <a href="#">
-          <li class="cart">Help<span class="itemCount">0</span></li>
-        </a> -->
-
-        <li v-if="getUserName() !== ''" class="login">
+        <li v-if="isAuthenticated" class="login">
           <a @click="logout">Sign out</a>
         </li>
-
-        <li class="login" v-else>Sign in</li>
-
-        <li>
-          <div class="search-container">
-            <form action="/search" method="get">
-              <input
-                class="search expandright"
-                id="searchright"
-                type="search"
-                name="q"
-                placeholder="Titles, authors, categories"
-              />
-              <label class="search-button" for="searchright"
-                ><span class="mglass">&#9906;</span>
-              </label>
-            </form>
-          </div>
-        </li>
+        <li class="login" v-else><a @click="loginRedirect">Sign in</a></li>
       </ul>
     </div>
   </header>

@@ -1,15 +1,16 @@
 const { Router } = require("express");
 const MeetingAttendance = require("../../models/MeetingAttendance");
+const { verifyGoogleToken } = require("../../middleware/auth");
 const qrCodeReader = require("qrcode-reader");
 var QRCode = require("qrcode");
 const Jimp = require("jimp");
 
 const router = Router();
 
-router.post("/generateQR", async (req, res, next) => {
+router.post("/generateQR", verifyGoogleToken, async (req, res, next) => {
   const meetingId = req.body.meetingId;
-  const userId = req.body.userId;
-  const expirationTime = new Date().getTime() + 40000; // 40 seconds from now
+  const userId = req.user.email;
+  const expirationTime = new Date().getTime() + 30000; // 40 seconds from now
 
   const inputString = `${meetingId},${userId},${expirationTime}`;
 
@@ -67,30 +68,30 @@ router.post("/verifyQR", async (req, res, next) => {
 //   res.json(["Tony","Lisa","Michael","Ginger","Food"]);
 //  });
 
-router.get("/scanQR", (req, res, next) => {
-  const buffer = fs.readFileSync("./file.png");
+// router.get("/scanQR", (req, res, next) => {
+//   const buffer = fs.readFileSync("./file.png");
 
-  // __ Parse the image using Jimp.read() __ \\
-  Jimp.read(buffer, function (err, image) {
-    if (err) {
-      console.error(err);
-    }
-    // __ Creating an instance of qrcode-reader __ \\
+//   // __ Parse the image using Jimp.read() __ \\
+//   Jimp.read(buffer, function (err, image) {
+//     if (err) {
+//       console.error(err);
+//     }
+//     // __ Creating an instance of qrcode-reader __ \\
 
-    const qrCodeInstance = new qrCodeReader();
+//     const qrCodeInstance = new qrCodeReader();
 
-    qrCodeInstance.callback = function (err, value) {
-      if (err) {
-        console.error(err);
-      }
-      // __ Printing the decrypted value __ \\
-      console.log(value.result);
-      res.send(value.result);
-    };
+//     qrCodeInstance.callback = function (err, value) {
+//       if (err) {
+//         console.error(err);
+//       }
+//       // __ Printing the decrypted value __ \\
+//       console.log(value.result);
+//       res.send(value.result);
+//     };
 
-    // __ Decoding the QR code __ \\
-    qrCodeInstance.decode(image.bitmap);
-  });
-});
+//     // __ Decoding the QR code __ \\
+//     qrCodeInstance.decode(image.bitmap);
+//   });
+// });
 
 module.exports = router;

@@ -15,10 +15,12 @@ export default {
     const getMeetingList = async (selectedTab) => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/meeting/${selectedTab}`,
+          `${import.meta.env.VITE_SERVER_ENDPOINT}/api/meeting/${selectedTab}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.access_token}`,
+              Authorization: `Bearer ${
+                JSON.parse(localStorage.getItem("tokens")).access_token
+              }`,
             },
           }
         );

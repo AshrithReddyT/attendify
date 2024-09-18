@@ -12,6 +12,7 @@ const route = useRoute();
 
 // Fetch the meeting data from the server
 const fetchMeeting = async (id, passkey) => {
+  console.log("IN fetch meeting");
   try {
     if (!id || !passkey) {
       message.value = "Not a valid meeting!";
@@ -31,35 +32,22 @@ const fetchMeeting = async (id, passkey) => {
 // Call fetchMeeting with the route params when the component is mounted
 fetchMeeting(route.params.id, route.params.passkey);
 
-const exchangeCodeForToken = (code) => {
-  const params = new URLSearchParams();
-  params.append("code", code);
-  params.append(
-    "client_id",
-    "1054586386822-oqloh2jc5tmhsnmicntac5il7o4hfiqn.apps.googleusercontent.com"
-  );
-  params.append("client_secret", "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");
-  params.append("redirect_uri", "http://localhost:5173");
-  params.append("grant_type", "authorization_code");
-
-  return axios
-    .post("https://oauth2.googleapis.com/token", params)
-    .then((response) => {
-      console.log(response.data);
-      const { access_token, refresh_token } = response.data;
-      localStorage.setItem("access_token", access_token);
-      localStorage.setItem("refresh_token", refresh_token);
-      axios
-        .get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`)
-        .then((res) => {
-          console.log(res);
-          localStorage.userProfile = JSON.stringify(res.data);
-          router.push(`/qr/${route.params.id}`);
-        });
-    })
-    .catch((error) => {
-      console.error("Failed to exchange code for token", error);
+const exchangeCodeForToken = async (code) => {
+  try {
+    const resp = await axios.post(import.meta.env.VITE_SERVER_ENDPOINT + "/auth/google", {
+      code: code,
     });
+    const { tokens, userProfile } = resp.data;
+
+    // Store tokens and userProfile in local storage
+    localStorage.setItem("tokens", JSON.stringify(tokens));
+    localStorage.setItem("userProfile", JSON.stringify(userProfile));
+
+    // Redirect to Qr page
+    router.push(`/qr/${route.params.id}`);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const login = () => {

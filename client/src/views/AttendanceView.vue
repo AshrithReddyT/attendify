@@ -2,26 +2,39 @@
   <section class="att-hero">
     <div class="att-dark-overlay">
       <div class="attendance-container">
-        <h2>Attendance List for Meeting ID: {{ meetingId }}</h2>
-        <button class="refresh-list" @click="refreshData">
-          <i class="fas fa-sync-alt"></i>&nbsp;Refresh
-        </button>
-        <div class="data-container">
-          <ul class="attendance-table">
-            <li class="table-header">
-              <div>User ID</div>
-              <div>Attended</div>
-            </li>
-            <li
-              class="table-row"
-              v-for="attendance in meetingAttendanceList"
-              :key="attendance.id"
-            >
-              <div>{{ attendance.user_id }}</div>
-              <div>{{ attendance.attended }}</div>
-            </li>
-          </ul>
-          <div class="canvas-cont"><canvas id="attendance-chart"></canvas></div>
+        <h1>Meeting Details</h1>
+        <h3><b>Topic:</b> {{ meeting.name }}</h3>
+        <h3><b>Description:</b> {{ meeting.description }}</h3>
+        <h3><b>When:</b> {{ formatDateTime(meeting.start_time) }}<br /></h3>
+        <h3>
+          <b>Duration:</b>
+          {{ getMeetingMinutes(meeting.start_time, meeting.end_time) }} minutes
+        </h3>
+        <div class="action-container">
+          <button class="download-button" @click="downloadCSVData">
+            <i class="fas fa-solid fa-download"></i>&nbsp;Download Report
+          </button>
+          <button class="refresh-list" @click="refreshData">
+            <i class="fas fa-sync-alt"></i>&nbsp;Refresh
+          </button>
+          <div class="data-container">
+            <ul class="attendance-table">
+              <li class="table-header">
+                <div>User ID</div>
+                <div>Attended</div>
+              </li>
+              <li
+                class="table-row"
+                v-for="attendance in meetingAttendanceList"
+                :key="attendance.id"
+              >
+                <div>{{ attendance.user_id }}</div>
+                <div>{{ attendance.attended }}</div>
+              </li>
+            </ul>
+
+            <div class="canvas-cont"><canvas id="attendance-chart"></canvas></div>
+          </div>
         </div>
       </div>
     </div>
@@ -29,6 +42,21 @@
 </template>
 
 <style>
+h3 {
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 1.4rem;
+  max-width: 60%;
+  padding-left: 10px;
+  color: rgb(245, 245, 245);
+}
+
+.action-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: -90px;
+}
 .attendance-list {
   display: flex;
   flex-direction: column;
@@ -61,9 +89,9 @@
   justify-content: space-between;
   flex-direction: row;
 }
-h2 {
-  font-size: 1.8rem;
+h1 {
   color: rgb(242, 242, 242);
+  margin-bottom: 20px;
 }
 .att-hero {
   position: relative;
@@ -81,7 +109,7 @@ h2 {
   min-height: 650px;
   top: 0;
   left: 0;
-  background-color: rgba(8, 8, 8, 0.633);
+  background-color: rgba(8, 8, 8, 0.727);
 }
 
 .data-container {
@@ -91,6 +119,7 @@ h2 {
   background-color: rgba(0, 0, 0, 0.724);
   padding: 1rem 2rem 2rem 2rem;
   border-radius: 12px;
+  width: 100%;
 }
 
 .canvas-cont {
@@ -104,9 +133,9 @@ h2 {
 }
 
 .refresh-list {
-  width: 170px;
+  width: 150px;
   border: none;
-  padding: 10px 30px;
+  padding: 10px 20px;
   font-size: 20px;
   border-radius: 4px;
   background-color: rgb(78, 51, 255);
@@ -114,8 +143,30 @@ h2 {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  margin: 30px 0px;
+  margin: 30px 10px;
   font-weight: 550;
+}
+
+.download-button {
+  width: 250px;
+  border: none;
+  padding: 10px 20px;
+  font-size: 20px;
+  border-radius: 4px;
+  background-color: rgb(28, 126, 4);
+  color: rgb(237, 237, 237);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  font-weight: 550;
+  margin-top: -30px;
+}
+
+.download-button:hover {
+  background-color: rgb(97, 73, 255);
+  cursor: pointer;
+  color: rgb(255, 255, 255);
+  font-weight: 700;
 }
 
 .refresh-list:hover {
@@ -134,6 +185,7 @@ export default {
     return {
       meetingId: null,
       meetingAttendanceList: [],
+      meeting: {},
     };
   },
   created() {
@@ -142,12 +194,52 @@ export default {
     this.refreshData();
   },
   methods: {
+    async downloadCSVData() {
+      try {
+        let csv = "Meeting ID, User ID, attended\n";
+        console.log(csv);
+        this.meetingAttendanceList.forEach((row) => {
+          let r = [row["meeting_id"], row["user_id"], row["attended"]];
+          csv += r.join(",");
+          csv += "\n";
+        });
+        const anchor = document.createElement("a");
+        anchor.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+        anchor.target = "_blank";
+        anchor.download = this.meetingId + "_attendance_report.csv";
+        anchor.click();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
     async refreshData() {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/meetingAttendance/${this.meetingId}`
+        const meetingId = this.meetingId;
+        const responseMeeting = await axios.get(
+          `http://localhost:3000/api/meeting/id/${meetingId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${
+                JSON.parse(localStorage.getItem("tokens")).access_token
+              }`,
+            },
+          }
         );
-        this.meetingAttendanceList = response.data;
+        this.meeting = responseMeeting.data;
+
+        const responseAttendance = await axios.get(
+          `http://localhost:3000/api/meetingAttendance/${meetingId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${
+                JSON.parse(localStorage.getItem("tokens")).access_token
+              }`,
+            },
+          }
+        );
+        this.meetingAttendanceList = responseAttendance.data;
+
         this.createChart();
       } catch (error) {
         console.error(error);
@@ -190,6 +282,33 @@ export default {
         },
       });
       canvasElement.chart = chart;
+    },
+
+    getMeetingMinutes(startTime, endTime) {
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      const durationInMinutes = Math.round(
+        (end.getTime() - start.getTime()) / (1000 * 60)
+      );
+      return durationInMinutes;
+    },
+
+    formatDateTime(input) {
+      const date = new Date(input);
+      const formattedDate = date.toLocaleString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      const formattedTime = date.toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
+
+      const formattedDateTime = `${formattedDate} ${formattedTime}`;
+      return formattedDateTime;
     },
   },
 

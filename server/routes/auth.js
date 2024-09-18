@@ -29,13 +29,26 @@ router.get("/logout", (req, res, next) => {
 });
 
 router.post("/google", async (req, res) => {
-  console.log("REQ RECEived", req.body);
   try {
-    const { tokens } = await oAuth2Client.getToken(req.body.code);
-    console.log(tokens.access_token);
-    console.log(tokens.refresh_token);
-    res.status(200).json(tokens);
+    const authCode = req.body.code;
+    const { tokens } = await oAuth2Client.getToken(authCode);
+
+    // Verify the token
+    const ticket = await oAuth2Client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const userProfile = {
+      email: payload.email,
+      name: payload.name,
+      picture: payload.picture,
+    };
+
+    // Return token and user profile
+    res.status(200).json({ tokens, userProfile });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 });

@@ -4,7 +4,11 @@ import axios from "axios";
 const signIn = async () => {
   try {
     const response = await axios.get("http://localhost:3000/auth/google", {
-      // add any necessary request data, such as user credentials or tokens
+      headers: {
+        Authorization: `Bearer ${
+          JSON.parse(localStorage.getItem("tokens")).access_token
+        }`,
+      },
     });
     console.log(response);
     // handle the authentication response, such as redirecting the user to the authenticated page

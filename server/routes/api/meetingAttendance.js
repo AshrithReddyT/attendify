@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const MeetingAttendance = require("../../models/MeetingAttendance");
+const { verifyGoogleToken } = require("../../middleware/auth");
 const mongoose = require("mongoose");
 
 const router = Router();
@@ -21,7 +22,7 @@ router.get("/:meetingId", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", verifyGoogleToken, async (req, res) => {
   try {
     console.log(req.body.guestList);
     let meetingAttendances = [];

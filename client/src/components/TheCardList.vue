@@ -144,7 +144,7 @@ const formatDateTime = (input) => {
 }
 
 .meeting-box {
-  height: 250px;
+  height: 220px;
   width: 310px;
   padding: 2rem 1.5rem;
   color: rgb(212, 212, 212);
@@ -155,6 +155,10 @@ const formatDateTime = (input) => {
   box-shadow: 0 4px 8px 0 rgba(17, 17, 17, 0.936);
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.meeting-box:hover {
+  outline: 1px solid;
 }
 
 .meeting-box h2 {
@@ -190,7 +194,7 @@ const formatDateTime = (input) => {
 }
 
 .scan-link:hover {
-  color: rgb(180, 180, 248);
+  color: rgb(204, 204, 245);
 }
 
 .attendance-link {
@@ -208,23 +212,25 @@ const formatDateTime = (input) => {
   <section class="catalog-items">
     <ul v-if="props.meetingList.length > 0" class="list-container">
       <li v-for="meeting in props.meetingList" :key="meeting._id">
-        <div class="meeting-box">
-          <h2>{{ meeting.name }}</h2>
-          <h3>
-            {{ formatDateTime(meeting.start_time) }}<br />
-            {{ getMeetingMinutes(meeting.start_time, meeting.end_time) }}
-            minutes
-          </h3>
+        <router-link :to="`/attendance/${meeting._id}`">
+          <div class="meeting-box">
+            <h2>{{ meeting.name }}</h2>
+            <h3>
+              {{ formatDateTime(meeting.start_time) }}<br />
+              {{ getMeetingMinutes(meeting.start_time, meeting.end_time) }}
+              minutes
+            </h3>
 
-          <h4>{{ meeting.description }}</h4>
-          <router-link to="/scan">
-            <div class="scan-link">Attendance scanner</div>
-          </router-link>
+            <h4>{{ meeting.description }}</h4>
+            <router-link to="/scan">
+              <div class="scan-link">Attendance scanner</div>
+            </router-link>
 
-          <router-link :to="`/attendance/${meeting._id}`">
-            <div class="attendance-link">View Attendance</div>
-          </router-link>
-        </div>
+            <!-- <router-link :to="`/attendance/${meeting._id}`">
+              <div class="attendance-link">View Attendance</div>
+            </router-link> -->
+          </div>
+        </router-link>
       </li>
     </ul>
     <div v-else class="empty-container"><h1>You have no events</h1></div>

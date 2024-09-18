@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start:server": "nodemon index.js --ignore '../client/'",
     "start:client": "cd ../client/ && npm run dev",
     "start": "cross-env NODE_ENV=production node server",
-    "dev": "concurrently \"npm run start:server\" \"npm run start:client\""
+    "dev": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "test": "mocha --timeout 10000"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +21,9 @@
     "config": "^3.3.9",
     "connect-mongo": "^5.0.0",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "dotenv": "^16.0.3",
+    "expect": "^29.5.0",
     "express": "^4.18.2",
     "express-handlebars": "^7.0.4",
     "express-session": "^1.17.3",
@@ -32,16 +34,25 @@
     "moment": "^2.29.4",
     "mongoose": "^7.0.3",
     "morgan": "^1.10.0",
+    "need": "^0.0.0",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "qrcode": "^1.5.1",
     "qrcode-reader": "^1.0.4",
     "qs": "^6.11.1",
+    "readline-sync": "^1.4.10",
+    "really": "^1.0.0",
+    "really-need": "^1.9.2",
     "shortid": "^2.2.16",
+    "streamifier": "^0.1.1",
+    "supertest": "^6.3.3",
     "vue-time-date-range-picker": "^2.1.0"
   },
   "devDependencies": {
+    "chai": "^4.3.7",
+    "concurrently": "^8.0.1",
     "cross-env": "^7.0.3",
+    "mocha": "^10.2.0",
     "nodemon": "^2.0.22"
   }
 }
